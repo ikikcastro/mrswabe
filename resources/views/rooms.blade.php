@@ -44,10 +44,10 @@
     <section class="rooms-filter-wrap" aria-label="Filter rooms">
         <p class="eyebrow filter-eyebrow">Browse all rooms</p>
         <div class="rooms-filter" id="roomsFilter" data-active="all">
-            <button type="button" class="filter-pill is-active" data-filter="all">All Level</button>
-            <button type="button" class="filter-pill" data-filter="signature">Level 1</button>
-            <button type="button" class="filter-pill" data-filter="comfort">Level 2</button>
-            <button type="button" class="filter-pill" data-filter="essential">Level 3</button>
+            <button type="button" class="filter-pill is-active" data-filter="all" aria-pressed="true">All Level</button>
+            <button type="button" class="filter-pill" data-filter="signature" aria-pressed="false">Level 1</button>
+            <button type="button" class="filter-pill" data-filter="comfort" aria-pressed="false">Level 2</button>
+            <button type="button" class="filter-pill" data-filter="essential" aria-pressed="false">Level 3</button>
         </div>
     </section>
 
@@ -117,7 +117,7 @@
                 <p class="booking-copy">Send your details and choose how you'd like to pay.</p>
                 <form class="auth-form" id="bookingForm">
                     <label for="bookingFullname">Full name</label>
-                    <input id="bookingFullname" name="guest_name" type="text" value="{{ Auth::user()->name }}" required>
+                    <input id="bookingFullname" name="guest_name" type="text" value="{{ Auth::user()?->name ?? '' }}" required>
                     <label for="bookingDuration">Room duration</label>
                     <select id="bookingDuration" name="duration_hours" required>
                         @foreach (config('booking.room_duration_hours') as $hours)
@@ -539,15 +539,28 @@
             const filter = document.getElementById('roomsFilter');
             const grid = document.getElementById('roomsGrid');
             const cards = grid?.querySelectorAll('.room-card') || [];
-            filter?.querySelectorAll('.filter-pill').forEach((pill) => pill.addEventListener('click', () => {
-                filter.dataset.active = pill.dataset.filter;
-                filter.querySelectorAll('.filter-pill').forEach((item) => item.classList.toggle('is-active', item === pill));
-                cards.forEach((card) => {
-                    const matches = pill.dataset.filter === 'all' || card.dataset.tier === pill.dataset.filter;
-                    card.classList.toggle('is-hiding', !matches);
-                    card.style.display = matches ? '' : 'none';
+
+            function applyRoomFilter(tier) {
+                if (!filter) return;
+
+                filter.dataset.active = tier;
+                filter.querySelectorAll('.filter-pill').forEach((pill) => {
+                    const isActive = pill.dataset.filter === tier;
+                    pill.classList.toggle('is-active', isActive);
+                    pill.setAttribute('aria-pressed', String(isActive));
                 });
-            }));
+
+                cards.forEach((card) => {
+                    const matches = tier === 'all' || card.dataset.tier === tier;
+                    card.hidden = !matches;
+                    card.classList.toggle('is-hiding', !matches);
+                });
+            }
+
+            filter?.querySelectorAll('.filter-pill').forEach((pill) => {
+                pill.addEventListener('click', () => applyRoomFilter(pill.dataset.filter));
+            });
+            applyRoomFilter(filter?.dataset.active || 'all');
 
             const revealObserver = new IntersectionObserver((entries) => entries.forEach((entry) => {
                 if (entry.isIntersecting) {

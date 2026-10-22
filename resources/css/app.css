@@ -592,6 +592,7 @@ h1, h2, h3, p { margin-top: 0; }
 .filter-pill.is-active { background: var(--moss); color: var(--cream); }
 .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); gap: 1.75rem; padding: 0 clamp(1.5rem, 5vw, 4rem) clamp(3rem, 8vw, 6rem); }
 .room-card { display: flex; flex-direction: column; overflow: hidden; background: var(--cream); border: 1px solid var(--line); transition: box-shadow 0.35s ease, transform 0.35s ease, opacity 0.28s ease; }
+.room-card[hidden] { display: none; }
 .room-card:hover { transform: translateY(-6px); box-shadow: 0 1.5rem 2.5rem rgba(23, 33, 31, 0.14); }
 .room-card.is-hiding { opacity: 0; transform: scale(0.96); pointer-events: none; }
 .room-card.reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.6s ease, transform 0.6s ease; transition-delay: var(--reveal-delay, 0s); }

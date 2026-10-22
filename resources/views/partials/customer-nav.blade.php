@@ -46,7 +46,7 @@
             </div>
         @endauth
 
-        <span class="nav-greeting">Welcome back, {{ Auth::user()->name ?? 'guest' }}</span>
+        <span class="nav-greeting">Welcome back, {{ Auth::user()?->name ?? 'guest' }}</span>
         <form action="/logout" method="POST" class="nav-logout-form">
             @csrf
             <button class="button button-dark button-sm" type="submit">Logout</button>
