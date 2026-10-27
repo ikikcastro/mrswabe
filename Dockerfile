@@ -8,7 +8,6 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
-    supervisor \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
@@ -26,32 +25,38 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_pgsql gd pcntl
 
-# Enable Apache modules
+# Enable required Apache modules
 RUN a2enmod rewrite headers
 
-# Configure Apache
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# Configure Apache port for Render
+RUN sed -i 's/^Listen 80$/Listen 10000/' /etc/apache2/ports.conf \
+    && sed -i 's/<VirtualHost \*:80>/<VirtualHost *:10000>/' \
+        /etc/apache2/sites-available/000-default.conf \
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
+# Set Laravel public directory as document root
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' \
     /etc/apache2/sites-available/000-default.conf
 
+# Allow .htaccess overrides
 RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' \
     /etc/apache2/apache2.conf
 
-# Copy Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Copy application files
 COPY . .
 
 # Install PHP dependencies
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
 
-# Install frontend dependencies
-RUN npm install
-
-# Build frontend assets
-RUN npm run build
+# Install frontend dependencies and build assets
+RUN npm install && npm run build
 
 # Create Laravel storage link
 RUN php artisan storage:link || true
@@ -60,12 +65,9 @@ RUN php artisan storage:link || true
 RUN mkdir -p storage/logs bootstrap/cache \
     && touch storage/logs/laravel.log \
     && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache \
-    && chmod 664 storage/logs/laravel.log
+    && chmod -R 775 storage bootstrap/cache
 
-# Expose application port
 EXPOSE 10000
 
-# Run migrations, seed database, and start services
-CMD php artisan migrate --force \
-    && php artisan db:seed --force 
+# Run migrations, then keep Apache running in the foreground
+CMD ["sh", "-c", "php artisan migrate --force && exec apache2-foreground"]
