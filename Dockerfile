@@ -8,66 +8,78 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
+    supervisor \
     libpq-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    fontconfig \
-    && rm -rf /var/lib/apt/lists/*
+    fontconfig
 
 # Install Node.js 20 + npm
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y nodejs
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_pgsql gd pcntl
 
-# Enable required Apache modules
-RUN a2enmod rewrite headers
+# Enable Apache rewrite + websocket proxy
+RUN a2enmod rewrite proxy proxy_http proxy_wstunnel headers
 
-# Configure Apache port for Render
-RUN sed -i 's/^Listen 80$/Listen 10000/' /etc/apache2/ports.conf \
-    && sed -i 's/<VirtualHost \*:80>/<VirtualHost *:10000>/' \
-        /etc/apache2/sites-available/000-default.conf \
-    && echo "ServerName localhost" >> /etc/apache2/apache2.conf
+COPY docker/reverb.conf /etc/apache2/conf-available/reverb.conf
 
-# Set Laravel public directory as document root
+RUN a2enconf reverb
+
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 RUN sed -i 's|/var/www/html|/var/www/html/public|g' \
     /etc/apache2/sites-available/000-default.conf
 
-# Allow .htaccess overrides
 RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' \
     /etc/apache2/apache2.conf
+
+# Copy files
+COPY . .
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
-COPY . .
-
 # Install PHP dependencies
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --prefer-dist \
-    --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader
 
-# Install frontend dependencies and build assets
-RUN npm install && npm run build
+# Install frontend dependencies
+RUN npm install
 
-# Create Laravel storage link
+# Pass Vite ENV variables during Docker build
+ARG VITE_REVERB_APP_KEY
+ARG VITE_REVERB_HOST
+ARG VITE_REVERB_PORT
+ARG VITE_REVERB_SCHEME
+
+ENV VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY
+ENV VITE_REVERB_HOST=$VITE_REVERB_HOST
+ENV VITE_REVERB_PORT=$VITE_REVERB_PORT
+ENV VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+
+# Build Vite assets
+RUN npm run build
+
+# Storage link
 RUN php artisan storage:link || true
 
-# Set permissions
-RUN mkdir -p storage/logs bootstrap/cache \
+# Permissions
+RUN mkdir -p storage/logs \
     && touch storage/logs/laravel.log \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 storage bootstrap/cache \
+    && chmod -R 775 storage/logs \
+    && chmod 664 storage/logs/laravel.log
+
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 10000
+EXPOSE 8080
 
-# Run migrations, then keep Apache running in the foreground
-CMD ["sh", "-c", "php artisan migrate --force && exec apache2-foreground"]
+CMD php artisan migrate --force \
+    && php artisan db:seed --force \
+    && supervisord -c /etc/supervisor/conf.d/supervisord.conf
