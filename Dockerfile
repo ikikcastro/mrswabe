@@ -63,13 +63,9 @@ RUN mkdir -p storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
     && chmod 664 storage/logs/laravel.log
 
-# Configure Supervisor
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
 # Expose application port
 EXPOSE 10000
 
 # Run migrations, seed database, and start services
 CMD php artisan migrate --force \
-    && php artisan db:seed --force \
-    && exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
+    && php artisan db:seed --force 
