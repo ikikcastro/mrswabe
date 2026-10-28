@@ -29,6 +29,6 @@ class RoomController extends Controller
                 'tags' => $room->tags ?? [],
             ]);
 
-        return view('rooms', compact('rooms'));
+        return view('rooms.index', compact('rooms'));
     }
 }

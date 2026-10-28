@@ -18,7 +18,7 @@ class BookingController extends Controller
     /** My bookings: the logged-in customer's reservations, with live stay timers. */
     public function index(Request $request)
     {
-        return view('bookings', [
+        return view('bookings.index', [
             'reservations' => Reservation::with('room')
                 ->where('user_id', $request->user()->id)
                 ->latest()

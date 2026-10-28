@@ -11,7 +11,7 @@ class AdminLoginController extends Controller
 {
     public function create()
     {
-        return view('admin.auth.login');
+        return view('admin.login');
     }
 
     public function store(Request $request)
