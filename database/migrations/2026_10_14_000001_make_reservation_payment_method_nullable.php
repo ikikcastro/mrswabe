@@ -13,29 +13,33 @@ return new class extends Migration
             $table->string('payment_method')->nullable()->change();
         });
 
-        // Remove the constraint first if it already exists.
-        DB::statement("
-            ALTER TABLE reservations
-            DROP CONSTRAINT IF EXISTS reservations_payment_method_check
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            // Remove the constraint first if it already exists.
+            DB::statement("
+                ALTER TABLE reservations
+                DROP CONSTRAINT IF EXISTS reservations_payment_method_check
+            ");
 
-        // Re-create the allowed values constraint.
-        DB::statement("
-            ALTER TABLE reservations
-            ADD CONSTRAINT reservations_payment_method_check
-            CHECK (
-                payment_method IS NULL
-                OR payment_method IN ('gcash', 'maribank')
-            )
-        ");
+            // Re-create the allowed values constraint.
+            DB::statement("
+                ALTER TABLE reservations
+                ADD CONSTRAINT reservations_payment_method_check
+                CHECK (
+                    payment_method IS NULL
+                    OR payment_method IN ('gcash', 'maribank')
+                )
+            ");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("
-            ALTER TABLE reservations
-            DROP CONSTRAINT IF EXISTS reservations_payment_method_check
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE reservations
+                DROP CONSTRAINT IF EXISTS reservations_payment_method_check
+            ");
+        }
 
         // Fill NULL values before restoring NOT NULL.
         DB::table('reservations')
@@ -46,10 +50,12 @@ return new class extends Migration
             $table->string('payment_method')->nullable(false)->change();
         });
 
-        DB::statement("
-            ALTER TABLE reservations
-            ADD CONSTRAINT reservations_payment_method_check
-            CHECK (payment_method IN ('gcash', 'maribank'))
-        ");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE reservations
+                ADD CONSTRAINT reservations_payment_method_check
+                CHECK (payment_method IN ('gcash', 'maribank'))
+            ");
+        }
     }
 };
