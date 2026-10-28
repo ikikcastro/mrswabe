@@ -80,6 +80,4 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 10000
 EXPOSE 8080
 
-CMD php artisan migrate --force \
-    && php artisan db:seed --force \
-    && supervisord -c /etc/supervisor/conf.d/supervisord.conf
+CMD php artisan migrate --force && php artisan db:seed --force || true && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
