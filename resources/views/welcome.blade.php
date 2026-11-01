@@ -51,7 +51,6 @@
 
         <div class="welcome-main" id="welcomeMain">
             <section class="welcome-intro">
-                <div class="brand-mark" aria-hidden="true">HH</div>
                 <p class="eyebrow">A quieter kind of stay</p>
                 <h1>Make room for the good days.</h1>
                 <p class="intro-copy">Join ikik House for thoughtful rooms, unhurried mornings, and a place that feels like yours.</p>
