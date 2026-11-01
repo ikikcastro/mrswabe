@@ -324,6 +324,7 @@ h1, h2, h3, p { margin-top: 0; }
 .button-sm { width: auto; margin-top: 0; padding: 0.55rem 1.1rem; }
 .site-nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 2rem; padding: 1.25rem clamp(1.5rem, 5vw, 4rem); background: rgba(245, 241, 233, 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .nav-brand { display: flex; align-items: center; gap: 0.75rem; color: var(--ink); text-decoration: none; }
+.nav-brand-logo { width: 2.25rem; height: 2.25rem; border-radius: 50%; object-fit: cover; }
 .nav-brand-name, .nav-link { font: 700 0.72rem 'Trebuchet MS', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
 .nav-links { display: flex; gap: 1.75rem; margin-right: auto; }
 .nav-link { color: var(--muted); text-decoration: none; transition: color 0.3s ease; }

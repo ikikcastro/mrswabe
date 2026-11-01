@@ -13,7 +13,7 @@
         data-feed="{{ url('/notifications') }}"
         data-read="{{ url('/notifications/read') }}">
     <a href="{{ url('/') }}" class="nav-brand">
-        <span class="brand-mark brand-mark--sm" aria-hidden="true">HH</span>
+        <img class="nav-brand-logo" src="{{ asset('favicon.svg') }}" alt="">
         <span class="nav-brand-name">ikik House</span>
     </a>
 
