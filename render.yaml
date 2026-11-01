@@ -3,9 +3,15 @@ services:
     name: hotel-reservation-system
     runtime: docker
     buildCommand: "composer install --no-dev --optimize-autoloader && npm install && npm run build"
-    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    startCommand: "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: "false"
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_SECURE_COOKIE
+        value: "true"
+      - key: SESSION_SAME_SITE
+        value: lax

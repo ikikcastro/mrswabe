@@ -90,6 +90,10 @@ test('successful owner login is recorded as login activity', function () {
         'password' => 'secure-password-123',
     ])->assertRedirect('/admin/dashboard');
 
+    $this->get('/admin/dashboard')
+        ->assertOk()
+        ->assertSee('Owner overview');
+
     $this->assertDatabaseHas('login_activities', [
         'user_id' => $owner->id,
         'login_type' => 'owner',
