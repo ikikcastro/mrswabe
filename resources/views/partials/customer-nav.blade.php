@@ -20,7 +20,6 @@
     <nav class="nav-links" aria-label="Primary">
         <a href="{{ url('/rooms') }}" class="nav-link {{ $active === 'rooms' ? 'is-active' : '' }}">Rooms</a>
         <a href="{{ url('/bookings') }}" class="nav-link {{ $active === 'bookings' ? 'is-active' : '' }}">My bookings</a>
-        <a href="{{ url('/amenities') }}" class="nav-link">Amenities</a>
     </nav>
 
     <div class="nav-user">
