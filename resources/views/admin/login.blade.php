@@ -21,7 +21,7 @@
             <p class="admin-login-error">{{ session('error') }}</p>
         @endif
 
-        <form method="POST" action="{{ route('admin.login') }}" class="auth-form admin-login-form">
+        <form class="auth-form admin-login-form" action="{{ route('admin.login.attempt') }}" method="POST">
             @csrf
             <label for="owner-username">Username</label>
             <input id="owner-username" name="username" type="text" placeholder="Owner username" autocomplete="username" required autofocus>

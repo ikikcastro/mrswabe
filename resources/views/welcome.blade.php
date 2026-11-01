@@ -21,7 +21,7 @@
     @else
     <main class="welcome-page">
         <section class="welcome-splash" id="welcomeSplash" aria-label="Welcome animation, tap to continue">
-            <svg class="house-build" viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A house assembling">
+            <svg class="house-build" id="houseBuild" viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
                 <ellipse class="house-ground" cx="200" cy="284" rx="130" ry="8"></ellipse>
                 <g class="house-piece piece-wall">
                     <rect x="120" y="180" width="160" height="100" rx="2"></rect>
@@ -61,6 +61,7 @@
             <section class="auth-area" aria-label="Account access">
                 <div class="auth-heading">
                     <p class="eyebrow">Welcome in</p>
+                    <h2>Your next chapter is waiting.</h2>
                 </div>
 
             <!-- Toggle switch -->
