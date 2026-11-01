@@ -60,7 +60,6 @@
             <section class="auth-area" aria-label="Account access">
                 <div class="auth-heading">
                     <p class="eyebrow">Welcome in</p>
-                    <h2>Your next chapter is waiting.</h2>
                 </div>
 
             <!-- Toggle switch -->
