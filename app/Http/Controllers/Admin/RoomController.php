@@ -52,7 +52,11 @@ class RoomController extends Controller
         $data['price'] = $data['price_3_hours'];
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('rooms', 'public');
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'rooms'],
+            );
+            $data['image'] = $upload['secure_url'];
         }
 
         $this->rooms->create($data);
@@ -75,10 +79,13 @@ class RoomController extends Controller
         if ($request->hasFile('image')) {
             $oldImage = $room->image;
 
-            $data['image'] = $request->file('image')->store('rooms', 'public');
+            $upload = cloudinary()->uploadApi()->upload(
+                $request->file('image')->getRealPath(),
+                ['folder' => 'rooms'],
+            );
+            $data['image'] = $upload['secure_url'];
 
-            // Remove the previous picture only if it was an upload we stored,
-            // never one of the seeded https:// links.
+            // Clean up uploads made to the local public disk before Cloudinary was configured.
             if ($oldImage && ! Str::startsWith($oldImage, ['http://', 'https://'])) {
                 Storage::disk('public')->delete($oldImage);
             }
