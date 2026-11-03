@@ -6,6 +6,23 @@ use App\Models\Room;
 
 class RoomService
 {
+    public function create(array $data): Room
+    {
+        return Room::create($data);
+    }
+
+    public function update(Room $room, array $data): Room
+    {
+        $room->update($data);
+
+        return $room;
+    }
+
+    public function delete(Room $room): bool
+    {
+        return (bool) $room->delete();
+    }
+
     /** @return list<array<string, mixed>> */
     public function all(): array
     {

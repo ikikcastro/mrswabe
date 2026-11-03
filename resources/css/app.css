@@ -1085,6 +1085,19 @@ h1, h2, h3, p { margin-top: 0; }
     background: transparent;
     font: inherit;
 }
+.room-edit-form select,
+.room-edit-form textarea {
+    width: 100%;
+    padding: 0.7rem 0;
+    border: 0;
+    border-bottom: 1px solid rgba(27, 36, 32, 0.2);
+    outline: 0;
+    color: #1b2420;
+    background: transparent;
+    font: inherit;
+}
+.room-edit-form select:focus,
+.room-edit-form textarea:focus { border-color: #557665; }
 .room-edit-form input:focus { border-color: #557665; }
 .room-edit-preview {
     width: 100%;
@@ -1104,3 +1117,21 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .room-edit-upload:hover { border-color: #557665; color: #1b2420; }
 .room-edit-hint { margin: 0; color: #9aa49e; font-size: 0.68rem; }
+
+.room-table-wrap { width: 100%; overflow-x: auto; }
+.room-table { width: 100%; border-collapse: collapse; text-align: left; }
+.room-table th,
+.room-table td { padding: 0.85rem 0.75rem; border-bottom: 1px solid rgba(27, 36, 32, 0.1); white-space: nowrap; }
+.room-table th { color: #65716c; font: 700 0.62rem 'Trebuchet MS', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+.room-table td { color: #1b3029; font-size: 0.75rem; }
+.room-table-image { display: block; width: 3.5rem; height: 2.5rem; border-radius: 4px; object-fit: cover; }
+.room-table-no-image { color: #9aa49e; font-size: 0.65rem; }
+.room-table-name { font-weight: 700; }
+.room-table .tier-badge { display: inline-block; }
+.room-table-actions { display: flex; align-items: center; gap: 0.4rem; }
+.room-table-actions form { margin: 0; }
+.room-table-empty { padding: 1.5rem !important; color: #65716c !important; text-align: center; }
+
+@media (max-width: 700px) {
+    .room-table { min-width: 48rem; }
+}

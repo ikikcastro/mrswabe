@@ -9,12 +9,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/**
+ * A bookable room with a tier, prices for 3, 7, and 24 hours,
+ * availability status, image, and blurb.
+ */
 class Room extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name', 'tier', 'price', 'price_3_hours', 'price_7_hours', 'price_24_hours',
+        'price_3hrs', 'price_7hrs', 'price_24hrs',
         'max_guests', 'blurb', 'image', 'tags', 'status',
     ];
 
@@ -32,6 +37,30 @@ class Room extends Model
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
+    }
+
+    protected function price3hrs(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->price_3_hours,
+            set: fn ($value) => ['price_3_hours' => $value],
+        );
+    }
+
+    protected function price7hrs(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->price_7_hours,
+            set: fn ($value) => ['price_7_hours' => $value],
+        );
+    }
+
+    protected function price24hrs(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->price_24_hours,
+            set: fn ($value) => ['price_24_hours' => $value],
+        );
     }
 
     /**

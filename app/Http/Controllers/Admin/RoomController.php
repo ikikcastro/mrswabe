@@ -6,12 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreRoomRequest;
 use App\Http\Requests\Admin\UpdateRoomRequest;
 use App\Models\Room;
+use App\Services\RoomService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+/** Owner's Add/Edit/Delete room actions. */
 class RoomController extends Controller
 {
+    public function __construct(private RoomService $rooms) {}
+
     public function index()
     {
         $rooms = Room::available()
@@ -34,9 +38,26 @@ class RoomController extends Controller
 
     public function store(StoreRoomRequest $request)
     {
-        Room::create($request->validated());
+        $data = $request->validated();
 
-        return back()->with('status', 'Room added.');
+        foreach ([
+            'price_3hrs' => 'price_3_hours',
+            'price_7hrs' => 'price_7_hours',
+            'price_24hrs' => 'price_24_hours',
+        ] as $legacyKey => $databaseColumn) {
+            $data[$databaseColumn] = $data[$databaseColumn] ?? $data[$legacyKey];
+            unset($data[$legacyKey]);
+        }
+
+        $data['price'] = $data['price_3_hours'];
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('rooms', 'public');
+        }
+
+        $this->rooms->create($data);
+
+        return back()->with('status', 'New room successfully added.')->with('tab', 'rooms');
     }
 
     /**
@@ -63,16 +84,20 @@ class RoomController extends Controller
             }
         }
 
-        $room->update($data);
+        $this->rooms->update($room, $data);
 
-        return back()->with('status', "{$room->name} updated.")->with('tab', 'rooms');
+        return back()->with('status', 'Room updated.')->with('tab', 'rooms');
     }
 
     public function destroy(Room $room)
     {
-        $room->delete();
+        if ($room->image && ! Str::startsWith($room->image, ['http://', 'https://'])) {
+            Storage::disk('public')->delete($room->image);
+        }
 
-        return back()->with('status', 'Room removed.');
+        $this->rooms->delete($room);
+
+        return back()->with('status', 'Room deleted.')->with('tab', 'rooms');
     }
 
     /**

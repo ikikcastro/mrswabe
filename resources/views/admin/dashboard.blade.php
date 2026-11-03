@@ -93,37 +93,77 @@
                     <article class="admin-panel">
                         <div class="admin-panel-heading">
                             <div><p class="admin-kicker">All rooms</p><h3>Manage rooms</h3></div>
-                            <span class="admin-count">{{ count($allRooms) }} rooms</span>
+                            <div class="admin-panel-heading-actions">
+                                <span class="admin-count">{{ count($allRooms) }} rooms</span>
+                                <button type="button" class="button button-sm button-dark" id="roomCreateBtn">+ Add new room</button>
+                            </div>
                         </div>
-                        <div class="room-manage-list">
-                            @forelse ($allRooms as $room)
-                                <div class="room-manage-row">
-                                    <div class="room-manage-info">
-                                        <strong>{{ $room->name }}</strong>
-                                        <span>{{ ['signature' => 'Level 1', 'comfort' => 'Level 2', 'essential' => 'Level 3'][$room->tier] ?? ucfirst($room->tier) }} &middot; 3 hrs &#8369;{{ number_format($room->price_3_hours, 0) }} &middot; 7 hrs &#8369;{{ number_format($room->price_7_hours, 0) }} &middot; 24 hrs &#8369;{{ number_format($room->price_24_hours, 0) }}</span>
-                                    </div>
-                                    <span class="room-status-badge room-status-badge--{{ $room->status }}">
-                                        {{ $room->status === 'available' ? 'Bookable' : 'Unavailable' }}
-                                    </span>
-                                    <button type="button" class="button button-sm button-outline room-edit-btn"
-                                        data-update-url="{{ route('admin.rooms.update', $room) }}"
-                                        data-name="{{ $room->name }}"
-                                        data-price-three-hours="{{ (int) $room->price_3_hours }}"
-                                        data-price-seven-hours="{{ (int) $room->price_7_hours }}"
-                                        data-price-twenty-four-hours="{{ (int) $room->price_24_hours }}"
-                                        data-max-guests="{{ $room->max_guests }}"
-                                        data-image="{{ $room->image_url }}">Edit</button>
-                                    <form method="POST" action="{{ route('admin.rooms.toggleStatus', $room) }}" class="room-manage-form">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="button button-sm {{ $room->status === 'available' ? 'button-dark' : 'button-light' }}">
-                                            {{ $room->status === 'available' ? 'Mark unavailable' : 'Mark available' }}
-                                        </button>
-                                    </form>
-                                </div>
-                            @empty
-                                <p class="booking-empty">No rooms yet.</p>
-                            @endforelse
+                        <div class="room-table-wrap">
+                            <table class="room-table">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Room</th>
+                                        <th>Tier</th>
+                                        <th>3 hours</th>
+                                        <th>7 hours</th>
+                                        <th>24 hours</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($allRooms as $room)
+                                        <tr>
+                                            <td>
+                                                @if ($room->image_url)
+                                                    <img class="room-table-image" src="{{ $room->image_url }}" alt="{{ $room->name }}" loading="lazy">
+                                                @else
+                                                    <span class="room-table-no-image">No image</span>
+                                                @endif
+                                            </td>
+                                            <td class="room-table-name">{{ $room->name }}</td>
+                                            <td><span class="tier-badge tier-badge--{{ $room->tier }}">{{ ['signature' => 'Signature', 'comfort' => 'Comfort', 'essential' => 'Essential'][$room->tier] ?? ucfirst($room->tier) }}</span></td>
+                                            <td>&#8369;{{ number_format($room->price_3_hours, 0) }}</td>
+                                            <td>&#8369;{{ number_format($room->price_7_hours, 0) }}</td>
+                                            <td>&#8369;{{ number_format($room->price_24_hours, 0) }}</td>
+                                            <td>
+                                                <span class="room-status-badge room-status-badge--{{ $room->status }}">
+                                                    {{ $room->status === 'available' ? 'Available' : 'Maintenance' }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="room-table-actions">
+                                                    <button type="button" class="button button-sm button-outline room-edit-btn"
+                                                        data-update-url="{{ route('admin.rooms.update', $room) }}"
+                                                        data-name="{{ $room->name }}"
+                                                        data-price-three-hours="{{ (int) $room->price_3_hours }}"
+                                                        data-price-seven-hours="{{ (int) $room->price_7_hours }}"
+                                                        data-price-twenty-four-hours="{{ (int) $room->price_24_hours }}"
+                                                        data-max-guests="{{ $room->max_guests }}"
+                                                        data-image="{{ $room->image_url }}">Edit</button>
+                                                    <form method="POST" action="{{ route('admin.rooms.destroy', $room) }}" onsubmit="return confirm('Delete this room? This cannot be undone.');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <input type="hidden" name="_tab" value="rooms">
+                                                        <button type="submit" class="button button-sm button-outline">Delete</button>
+                                                    </form>
+                                                    <form method="POST" action="{{ route('admin.rooms.toggleStatus', $room) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <input type="hidden" name="_tab" value="rooms">
+                                                        <button type="submit" class="button button-sm {{ $room->status === 'available' ? 'button-dark' : 'button-light' }}">
+                                                            {{ $room->status === 'available' ? 'Mark unavailable' : 'Mark available' }}
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td class="room-table-empty" colspan="8">No rooms yet.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </article>
                 </section>
@@ -331,11 +371,20 @@
 
             <form method="POST" enctype="multipart/form-data" id="roomEditForm" class="room-edit-form">
                 @csrf
-                @method('PUT')
+                <input type="hidden" name="_method" id="roomFormMethod" value="PUT" disabled>
                 <input type="hidden" name="_tab" value="rooms">
 
                 <label for="roomEditName">Room name</label>
                 <input id="roomEditName" name="name" type="text" maxlength="255" required>
+
+                <div class="room-create-only">
+                    <label for="roomEditTier">Tier</label>
+                    <select id="roomEditTier" name="tier" required>
+                        <option value="signature">Signature</option>
+                        <option value="comfort" selected>Comfort</option>
+                        <option value="essential">Essential</option>
+                    </select>
+                </div>
 
                 <label for="roomEditPrice3Hours">Price for 3 hours (&#8369;)</label>
                 <input id="roomEditPrice3Hours" name="price_3_hours" type="number" min="0" max="1000000" step="1" required>
@@ -354,7 +403,18 @@
                 <input id="roomEditImage" name="image" type="file" accept="image/png,image/jpeg,image/webp" hidden>
                 <p class="room-edit-hint">Leave this empty to keep the current picture.</p>
 
-                <button type="submit" class="admin-button admin-button--dark">Save changes</button>
+                <div class="room-create-only">
+                    <label for="roomEditStatus">Status</label>
+                    <select id="roomEditStatus" name="status" required>
+                        <option value="available">Available</option>
+                        <option value="maintenance">Maintenance</option>
+                    </select>
+
+                    <label for="roomEditBlurb">Description</label>
+                    <textarea id="roomEditBlurb" name="blurb" maxlength="500" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="admin-button admin-button--dark" id="roomFormSubmit">Save changes</button>
             </form>
         </div>
     </div>
@@ -363,14 +423,21 @@
     (() => {
         const modal = document.getElementById('roomEditModal');
         const form = document.getElementById('roomEditForm');
+        const title = document.getElementById('roomEditTitle');
+        const methodInput = document.getElementById('roomFormMethod');
+        const submitButton = document.getElementById('roomFormSubmit');
         const nameInput = document.getElementById('roomEditName');
         const price3HoursInput = document.getElementById('roomEditPrice3Hours');
         const price7HoursInput = document.getElementById('roomEditPrice7Hours');
         const price24HoursInput = document.getElementById('roomEditPrice24Hours');
+        const tierInput = document.getElementById('roomEditTier');
+        const statusInput = document.getElementById('roomEditStatus');
+        const blurbInput = document.getElementById('roomEditBlurb');
         const imageInput = document.getElementById('roomEditImage');
         const imageName = document.getElementById('roomEditImageName');
         const preview = document.getElementById('roomEditPreview');
         const defaultLabel = 'Choose a new picture (JPG, PNG or WebP)';
+        const createOnlyFields = document.querySelectorAll('.room-create-only');
         let objectUrl = null;
 
         const close = () => {
@@ -378,22 +445,55 @@
             modal.setAttribute('aria-hidden', 'true');
         };
 
+        const open = () => {
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            nameInput.focus();
+        };
+
+        document.getElementById('roomCreateBtn').addEventListener('click', () => {
+            form.reset();
+            form.action = @json(route('admin.rooms.store'));
+            methodInput.disabled = true;
+            createOnlyFields.forEach((field) => {
+                field.hidden = false;
+                field.querySelectorAll('input, select, textarea').forEach((input) => {
+                    input.disabled = false;
+                });
+            });
+            title.textContent = 'Add new room';
+            submitButton.textContent = 'Save room';
+            imageInput.value = '';
+            imageName.textContent = defaultLabel;
+            preview.hidden = true;
+            preview.src = '';
+            open();
+        });
+
         document.querySelectorAll('.room-edit-btn').forEach((button) => {
             button.addEventListener('click', () => {
                 form.action = button.dataset.updateUrl;
+                methodInput.value = 'PUT';
+                methodInput.disabled = false;
                 nameInput.value = button.dataset.name;
                 price3HoursInput.value = button.dataset.priceThreeHours;
                 price7HoursInput.value = button.dataset.priceSevenHours;
                 price24HoursInput.value = button.dataset.priceTwentyFourHours;
+                createOnlyFields.forEach((field) => {
+                    field.hidden = true;
+                    field.querySelectorAll('input, select, textarea').forEach((input) => {
+                        input.disabled = true;
+                    });
+                });
+                title.textContent = 'Edit room';
+                submitButton.textContent = 'Save changes';
                 imageInput.value = '';
                 imageName.textContent = defaultLabel;
 
                 preview.hidden = !button.dataset.image;
                 preview.src = button.dataset.image || '';
 
-                modal.classList.add('is-open');
-                modal.setAttribute('aria-hidden', 'false');
-                nameInput.focus();
+                open();
             });
         });
 
