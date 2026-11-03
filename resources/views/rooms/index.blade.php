@@ -7,6 +7,14 @@
         rooms-body
     @endslot
 
+    @php
+        $tierLabel = [
+            'signature' => 'Signature',
+            'comfort' => 'Comfort',
+            'essential' => 'Essential',
+        ];
+    @endphp
+
     @include('partials.customer-nav', ['active' => 'rooms'])
 
     <section class="rooms-hero">
@@ -24,7 +32,7 @@
                 </button>
                 <div class="slide-scrim" aria-hidden="true"></div>
                 <div class="slide-overlay">
-                    <span class="tier-badge tier-badge--{{ $room['tier'] }}">{{ ['signature' => 'Level 1', 'comfort' => 'Level 2', 'essential' => 'Level 3'][$room['tier']] ?? ucfirst($room['tier']) }}</span>
+                    <span class="tier-badge tier-badge--{{ $room['tier'] }}">{{ $tierLabel[$room['tier']] ?? ucfirst($room['tier']) }}</span>
                     <h2>{{ $room['name'] }}</h2>
                     <p>{{ $room['blurb'] }}</p>
                     <button type="button" class="button button-light explore-btn" data-room='@json($room)'>
@@ -58,7 +66,7 @@
                     <button type="button" class="slide-image-btn" data-lightbox-src="{{ $room['image'] }}" data-lightbox-alt="{{ $room['name'] }}">
                         <img src="{{ $room['image'] }}" alt="{{ $room['name'] }}" loading="lazy">
                     </button>
-                    <span class="tier-badge tier-badge--{{ $room['tier'] }}">{{ ['signature' => 'Level 1', 'comfort' => 'Level 2', 'essential' => 'Level 3'][$room['tier']] ?? ucfirst($room['tier']) }}</span>
+                    <span class="tier-badge tier-badge--{{ $room['tier'] }}">{{ $tierLabel[$room['tier']] ?? ucfirst($room['tier']) }}</span>
                 </div>
                 <div class="room-body">
                     <h3>{{ $room['name'] }}</h3>
@@ -70,10 +78,10 @@
                     </ul>
                     <div class="room-footer">
                         <div class="room-price">
-                            <span class="price-amount">&#8369;{{ $room['price'] }}</span>
+                            <span class="price-amount">&#8369;{{ number_format($room['price_3hrs'], 2) }}</span>
                             <span class="price-unit">/ 3 hours</span>
                         </div>
-                        <button type="button" class="button button-light room-cta explore-btn" data-room='@json($room)'>Explore <span aria-hidden="true">&#8594;</span></button>
+                        <button type="button" class="button button-light room-cta explore-btn" data-room='@json($room)'>EXPLORE <span aria-hidden="true">&#8594;</span></button>
                     </div>
                 </div>
             </article>

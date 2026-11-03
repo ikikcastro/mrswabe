@@ -18,6 +18,7 @@ class RoomController extends Controller
                 'max_guests' => $room->max_guests,
                 // formatted string ("700"); the Blade view prints it with a ₱ prefix
                 'price' => number_format($room->price_3_hours, 0),
+                'price_3hrs' => $room->price_3hrs,
                 'duration_prices' => [
                     3 => (int) $room->price_3_hours,
                     7 => (int) $room->price_7_hours,
