@@ -8,8 +8,6 @@ use App\Http\Requests\Admin\UpdateRoomRequest;
 use App\Models\Room;
 use App\Services\RoomService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 /** Owner's Add/Edit/Delete room actions. */
 class RoomController extends Controller
@@ -51,14 +49,6 @@ class RoomController extends Controller
 
         $data['price'] = $data['price_3_hours'];
 
-        if ($request->hasFile('image')) {
-            $upload = cloudinary()->uploadApi()->upload(
-                $request->file('image')->getRealPath(),
-                ['folder' => 'rooms'],
-            );
-            $data['image'] = $upload['secure_url'];
-        }
-
         $this->rooms->create($data);
 
         return back()->with('status', 'New room successfully added.')->with('tab', 'rooms');
@@ -73,23 +63,8 @@ class RoomController extends Controller
     public function update(UpdateRoomRequest $request, Room $room)
     {
         $data = $request->safe()->only([
-            'name', 'price_3_hours', 'price_7_hours', 'price_24_hours', 'max_guests',
+            'name', 'price_3_hours', 'price_7_hours', 'price_24_hours', 'max_guests', 'image',
         ]);
-
-        if ($request->hasFile('image')) {
-            $oldImage = $room->image;
-
-            $upload = cloudinary()->uploadApi()->upload(
-                $request->file('image')->getRealPath(),
-                ['folder' => 'rooms'],
-            );
-            $data['image'] = $upload['secure_url'];
-
-            // Clean up uploads made to the local public disk before Cloudinary was configured.
-            if ($oldImage && ! Str::startsWith($oldImage, ['http://', 'https://'])) {
-                Storage::disk('public')->delete($oldImage);
-            }
-        }
 
         $this->rooms->update($room, $data);
 
@@ -98,10 +73,6 @@ class RoomController extends Controller
 
     public function destroy(Room $room)
     {
-        if ($room->image && ! Str::startsWith($room->image, ['http://', 'https://'])) {
-            Storage::disk('public')->delete($room->image);
-        }
-
         $this->rooms->delete($room);
 
         return back()->with('status', 'Room deleted.')->with('tab', 'rooms');

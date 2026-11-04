@@ -22,7 +22,7 @@ class StoreRoomRequest extends FormRequest
             'price_3_hours' => ['required_without:price_3hrs', 'numeric', 'min:0'],
             'price_7_hours' => ['required_without:price_7hrs', 'numeric', 'min:0'],
             'price_24_hours' => ['required_without:price_24hrs', 'numeric', 'min:0'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'status' => ['required', 'in:available,maintenance'],
             'blurb' => ['nullable', 'string', 'max:500'],
         ];

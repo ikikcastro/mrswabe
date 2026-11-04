@@ -39,6 +39,22 @@ class Room extends Model
         return $this->hasMany(Reservation::class);
     }
 
+    public function getPriceAttribute($value): string
+    {
+        return number_format((float) ($this->getAttribute('price_24_hours') ?? $value), 0);
+    }
+
+    public function getImageAttribute($value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        return Str::startsWith($value, ['http://', 'https://'])
+            ? $value
+            : Storage::disk('public')->url($value);
+    }
+
     protected function price3hrs(): Attribute
     {
         return Attribute::make(

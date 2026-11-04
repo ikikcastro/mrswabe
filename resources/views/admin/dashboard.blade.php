@@ -362,81 +362,76 @@
         </main>
     </div>
 
-    <div class="room-edit-modal" id="roomEditModal" aria-hidden="true">
-        <div class="room-edit-backdrop" id="roomEditBackdrop"></div>
-        <div class="room-edit-panel" role="dialog" aria-modal="true" aria-labelledby="roomEditTitle">
-            <button type="button" class="room-edit-close" id="roomEditClose" aria-label="Close">&#10005;</button>
-            <p class="admin-kicker">Edit room</p>
-            <h3 id="roomEditTitle">Room details</h3>
+    {{-- Add / Edit room modal. Posts as a normal form (no JS submit), so CSRF and redirects work. --}}
+    <div class="admin-modal room-edit-modal" id="roomModal" aria-hidden="true">
+        <div class="explore-modal-backdrop room-edit-backdrop" id="roomModalBackdrop"></div>
+        <div class="admin-modal-panel room-edit-panel" role="dialog" aria-modal="true" aria-labelledby="roomModalTitle">
+            <button type="button" class="explore-modal-close room-edit-close" id="roomModalClose" aria-label="Close">&#10005;</button>
+            <h3 id="roomModalTitle">Add room</h3>
 
-            <form method="POST" enctype="multipart/form-data" id="roomEditForm" class="room-edit-form">
+            <form class="auth-form admin-modal-form room-edit-form" id="roomForm"
+                  method="POST" action="{{ route('admin.rooms.store') }}" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="_method" id="roomFormMethod" value="PUT" disabled>
                 <input type="hidden" name="_tab" value="rooms">
 
-                <label for="roomEditName">Room name</label>
-                <input id="roomEditName" name="name" type="text" maxlength="255" required>
+                <label for="roomName">Room name</label>
+                <input id="roomName" name="name" type="text" placeholder="e.g. Courtyard Room" required>
 
                 <div class="room-create-only">
-                    <label for="roomEditTier">Tier</label>
-                    <select id="roomEditTier" name="tier" required>
+                    <label for="roomTier">Tier</label>
+                    <select id="roomTier" name="tier" required>
                         <option value="signature">Signature</option>
-                        <option value="comfort" selected>Comfort</option>
+                        <option value="comfort">Comfort</option>
                         <option value="essential">Essential</option>
                     </select>
                 </div>
 
-                <label for="roomEditPrice3Hours">Price for 3 hours (&#8369;)</label>
-                <input id="roomEditPrice3Hours" name="price_3_hours" type="number" min="0" max="1000000" step="1" required>
+                <div class="room-create-only">
+                    <label for="roomBlurb">Short description</label>
+                    <input id="roomBlurb" name="blurb" type="text" maxlength="500" placeholder="One line about the room">
+                </div>
 
-                <label for="roomEditPrice7Hours">Price for 7 hours (&#8369;)</label>
-                <input id="roomEditPrice7Hours" name="price_7_hours" type="number" min="0" max="1000000" step="1" required>
+                <label for="roomPrice3h">3 hours (&#8369;)</label>
+                <input id="roomPrice3h" name="price_3_hours" type="number" min="0" max="1000000" step="1" required>
 
-                <label for="roomEditPrice24Hours">Price for 24 hours (&#8369;)</label>
-                <input id="roomEditPrice24Hours" name="price_24_hours" type="number" min="0" max="1000000" step="1" required>
+                <label for="roomPrice7h">7 hours (&#8369;)</label>
+                <input id="roomPrice7h" name="price_7_hours" type="number" min="0" max="1000000" step="1" required>
 
-                <label for="roomEditImage">Room picture</label>
-                <img id="roomEditPreview" class="room-edit-preview" src="" alt="Current room picture" hidden>
-                <label class="room-edit-upload" for="roomEditImage">
-                    <span id="roomEditImageName">Choose a new picture (JPG, PNG or WebP)</span>
-                </label>
-                <input id="roomEditImage" name="image" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-                <p class="room-edit-hint">Leave this empty to keep the current picture.</p>
+                <label for="roomPrice24h">24 hours (&#8369;)</label>
+                <input id="roomPrice24h" name="price_24_hours" type="number" min="0" max="1000000" step="1" required>
 
                 <div class="room-create-only">
-                    <label for="roomEditStatus">Status</label>
-                    <select id="roomEditStatus" name="status" required>
+                    <label for="roomStatus">Status</label>
+                    <select id="roomStatus" name="status" required>
                         <option value="available">Available</option>
                         <option value="maintenance">Maintenance</option>
                     </select>
-
-                    <label for="roomEditBlurb">Description</label>
-                    <textarea id="roomEditBlurb" name="blurb" maxlength="500" rows="3"></textarea>
                 </div>
 
-                <button type="submit" class="admin-button admin-button--dark" id="roomFormSubmit">Save changes</button>
+                <label for="roomImage">Photo <small>(required when adding)</small></label>
+                <img id="roomImagePreview" class="room-edit-preview" src="" alt="Current room picture" hidden>
+                <input id="roomImage" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+                <p class="room-edit-hint">Leave this empty to keep the current picture when editing.</p>
+
+                <button class="button button-dark" type="submit" id="roomFormSubmit">Save room</button>
             </form>
         </div>
     </div>
 
     <script>
     (() => {
-        const modal = document.getElementById('roomEditModal');
-        const form = document.getElementById('roomEditForm');
-        const title = document.getElementById('roomEditTitle');
+        const modal = document.getElementById('roomModal');
+        const form = document.getElementById('roomForm');
+        const title = document.getElementById('roomModalTitle');
         const methodInput = document.getElementById('roomFormMethod');
         const submitButton = document.getElementById('roomFormSubmit');
-        const nameInput = document.getElementById('roomEditName');
-        const price3HoursInput = document.getElementById('roomEditPrice3Hours');
-        const price7HoursInput = document.getElementById('roomEditPrice7Hours');
-        const price24HoursInput = document.getElementById('roomEditPrice24Hours');
-        const tierInput = document.getElementById('roomEditTier');
-        const statusInput = document.getElementById('roomEditStatus');
-        const blurbInput = document.getElementById('roomEditBlurb');
-        const imageInput = document.getElementById('roomEditImage');
-        const imageName = document.getElementById('roomEditImageName');
-        const preview = document.getElementById('roomEditPreview');
-        const defaultLabel = 'Choose a new picture (JPG, PNG or WebP)';
+        const nameInput = document.getElementById('roomName');
+        const price3HoursInput = document.getElementById('roomPrice3h');
+        const price7HoursInput = document.getElementById('roomPrice7h');
+        const price24HoursInput = document.getElementById('roomPrice24h');
+        const imageInput = document.getElementById('roomImage');
+        const preview = document.getElementById('roomImagePreview');
         const createOnlyFields = document.querySelectorAll('.room-create-only');
         let objectUrl = null;
 
@@ -455,16 +450,16 @@
             form.reset();
             form.action = @json(route('admin.rooms.store'));
             methodInput.disabled = true;
+            imageInput.required = true;
             createOnlyFields.forEach((field) => {
                 field.hidden = false;
                 field.querySelectorAll('input, select, textarea').forEach((input) => {
                     input.disabled = false;
                 });
             });
-            title.textContent = 'Add new room';
+            title.textContent = 'Add room';
             submitButton.textContent = 'Save room';
             imageInput.value = '';
-            imageName.textContent = defaultLabel;
             preview.hidden = true;
             preview.src = '';
             open();
@@ -475,6 +470,7 @@
                 form.action = button.dataset.updateUrl;
                 methodInput.value = 'PUT';
                 methodInput.disabled = false;
+                imageInput.required = false;
                 nameInput.value = button.dataset.name;
                 price3HoursInput.value = button.dataset.priceThreeHours;
                 price7HoursInput.value = button.dataset.priceSevenHours;
@@ -488,7 +484,6 @@
                 title.textContent = 'Edit room';
                 submitButton.textContent = 'Save changes';
                 imageInput.value = '';
-                imageName.textContent = defaultLabel;
 
                 preview.hidden = !button.dataset.image;
                 preview.src = button.dataset.image || '';
@@ -502,18 +497,18 @@
             if (objectUrl) URL.revokeObjectURL(objectUrl);
 
             if (!file) {
-                imageName.textContent = defaultLabel;
+                preview.hidden = true;
+                preview.src = '';
                 return;
             }
 
             objectUrl = URL.createObjectURL(file);
             preview.src = objectUrl;
             preview.hidden = false;
-            imageName.textContent = file.name;
         });
 
-        document.getElementById('roomEditClose').addEventListener('click', close);
-        document.getElementById('roomEditBackdrop').addEventListener('click', close);
+        document.getElementById('roomModalClose').addEventListener('click', close);
+        document.getElementById('roomModalBackdrop').addEventListener('click', close);
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') close();
         });

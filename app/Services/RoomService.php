@@ -3,16 +3,35 @@
 namespace App\Services;
 
 use App\Models\Room;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
+/**
+ * Handles room CRUD and photo storage.
+ */
 class RoomService
 {
+    public function list()
+    {
+        return Room::latest()->get();
+    }
+
     public function create(array $data): Room
     {
+        $data['image'] = $this->storeImage($data['image'] ?? null);
+
         return Room::create($data);
     }
 
     public function update(Room $room, array $data): Room
     {
+        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
+            $this->deleteImage($room->getRawOriginal('image'));
+            $data['image'] = $this->storeImage($data['image']);
+        } else {
+            unset($data['image']);
+        }
+
         $room->update($data);
 
         return $room;
@@ -20,7 +39,21 @@ class RoomService
 
     public function delete(Room $room): bool
     {
+        $this->deleteImage($room->getRawOriginal('image'));
+
         return (bool) $room->delete();
+    }
+
+    private function storeImage(?UploadedFile $file): ?string
+    {
+        return $file ? $file->store('rooms', 'public') : null;
+    }
+
+    private function deleteImage(?string $path): void
+    {
+        if ($path && ! str_starts_with($path, 'http')) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     /** @return list<array<string, mixed>> */
